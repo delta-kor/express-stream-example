@@ -7,15 +7,23 @@ import express, { Request, Response } from 'express';
 const app = express();
 
 const file = path.join(__dirname, '../media/music.mp3');
-const readStream = fs.createReadStream(file);
-const throttle = new Throttle(224000 / 8);
 const writeStream: Writable[] = [];
 
-readStream.pipe(throttle).on('data', chunk => {
-  writeStream.forEach(stream => {
-    stream.write(chunk);
+function play() {
+  const readStream = fs.createReadStream(file);
+  const throttle = new Throttle(224000 / 8);
+  let stream = readStream.pipe(throttle);
+
+  stream.on('data', chunk => {
+    writeStream.forEach(stream => {
+      stream.write(chunk);
+    });
   });
-});
+
+  stream.on('end', play);
+}
+
+play();
 
 app.get('/stream', (req: Request, res: Response) => {
   writeStream.push(res);
