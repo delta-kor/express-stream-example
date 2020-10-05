@@ -11,7 +11,7 @@ const writeStream: Writable[] = [];
 
 function play() {
   const readStream = fs.createReadStream(file);
-  const throttle = new Throttle(224000 / 8);
+  const throttle = new Throttle({ bps: 1024 * 224 });
   let stream = readStream.pipe(throttle);
 
   stream.on('data', chunk => {
